@@ -1,0 +1,239 @@
+program simpleThiever;
+
+procedure TSRL.Setup(Options: ESRLOptionSet = SRL_DEFAULT_OPTIONS);
+override;
+begin
+  Self.WriteLn('Setting up SRL for OSR');
+  Self.Writeln('Waiting for client to load...');
+  Smart.Init();
+end;
+function get_wildlevel:string;
+var
+  blueTPA: tpointarray;
+  blueATPA: t2dpointarray;
+  begin
+  FindColorsTolerance(blueTPA, 65535, 458, 281, 514, 296, 60);
+  if (length(blueTPA) > 1) then
+  blueATPA := splitTPAEx(blueTPA, 1, 10);
+  sortATPAFromFirstPointX(blueATPA, point(0, 0));
+  result:= getTextATPA(blueATPA, 5, 'UpChars07');
+  //DebugTPA(blueTPA, 'bmp');
+  end;
+ Function Wildlevel(Text: TStringArray): Boolean;
+Var
+  TheText: String;
+  i, n: Integer;
+Begin
+  TheText := get_wildlevel;
+  n := High(Text);
+  For i := 0 to n do
+    If (Pos(Text[i], TheText) > 0) then
+    Begin
+      Result := True;
+      Exit;
+    End;
+End;
+procedure openGameTab;
+begin
+  Mouse.Move(636,176);
+  Mouse.Click(1);
+  wait(50);
+end
+procedure thieveFarmer;
+  var
+    t : TPointArray;
+    i : integer;
+begin
+  if(mainscreen.isuptext(['armer','rmer','Farm'])) then
+        begin
+          mouse.Click(1);
+          wait(100);
+        end else
+  if(findcolorstolerance(t,8235193,0,0,519,336,3)) then
+  begin
+      t.FilterDuplicates;
+      t.Split(20);
+      for i := 0 to high(t) do
+      begin
+        mouse.Move(t[i]);
+        if(mainscreen.isuptext(['armer','rmer'])) then
+        begin
+          mouse.Click(1);
+          wait(100);
+          break;
+        end
+      end
+  end
+end
+procedure thieveHero;
+  var
+    t : TPointArray;
+    i : integer;
+begin
+  if(mainscreen.isuptext(['ero','Hero'])) then
+        begin
+          mouse.Click(1);
+          wait(100);
+        end else
+  if(findcolorstolerance(t,9333588,0,0,519,336,3)) then
+  begin
+      t.FilterDuplicates;
+      t.Split(20);
+      for i := 0 to high(t) do
+      begin
+        mouse.Move(t[i]);
+        if(mainscreen.isuptext(['ero','Hero'])) then
+        begin
+          mouse.Click(1);
+          wait(100);
+          break;
+        end
+      end
+  end
+end
+procedure withdrawPreset;
+var
+  x,y : integer;
+begin
+  GameTabs.open(tabQuests);
+  Mouse.Move(726,425);
+  Mouse.Click(1);
+    wait(800,900);
+  if(findcolortolerance(x,y,7830644,563,256,580,270,3)) then
+  begin
+    Mouse.Move(x,y);
+    Mouse.Click(1);
+    wait(1100,2000);
+    if(findcolortolerance(x,y,668230,237, 208,250, 212,5)) then
+    begin
+      Mouse.Move(x,y);
+      Mouse.Click(1);
+      wait(900,1500);
+      Keyboard.PressKey(VK_1);
+    end
+  end
+  opengametab;
+end
+function notinwild: boolean;
+begin
+if not Wildlevel(['Level','evel','vel','ev']) then
+begin
+result:=true;
+end else
+result:=false;
+end;
+function lowHealth : boolean
+begin
+  result := Minimap.GetHPLevel <= 30;
+end
+function veryLowHealth : boolean
+begin
+  result := (Minimap.GetHPLevel > 0) and (Minimap.GetHPLevel <= 20);
+end
+function noBrews : boolean
+begin
+result := countcolortolerance(4768965,562,204,720,460,3) < 1;
+end;
+function atEdge : boolean
+begin
+  result := (countcolortolerance(1276025,570,15,709,163,20) > 1000)
+  or (countcolortolerance(330428,570,15,709,163,5) > 20);
+end
+function atBandit : boolean
+begin
+  result := (countcolortolerance(4144966,570,15,709,163,5) > 1000)
+  or (countcolortolerance(833241,570,15,709,163,5) > 250);
+end
+
+procedure banditTeleport;
+  var
+  x,y : integer;
+begin
+  GameTabs.open(tabInventory);
+  if(findcolortolerance(x,y,5507492,555,210,726, 459,3)) then
+    begin
+      Mouse.Move(x,y);
+      Mouse.Click(0);
+      ChooseOption.Select('Rub',MOUSE_LEFT,TRUE,TRUE);
+      wait(600,700);
+      KeyBoard.PressKey(VK_2);
+      wait(1100,2000);
+      if(not notinwild) then begin
+        Mouse.Move(606, 45);
+        Mouse.Click(1);
+      wait(2000,2200);
+      end
+    end
+    GameTabs.open(tabInventory);
+end;
+procedure drinkBrew;
+  var
+  x,y : integer;
+begin
+   GameTabs.open(tabInventory);
+   if(findcolortolerance(x,y,4636866,555,210,726, 459,10)) then
+    begin
+      Mouse.Move(x,y);
+      Mouse.Click(1);
+    end
+end
+procedure gloryTeleport;
+  var
+  x,y : integer;
+begin
+  GameTabs.open(tabEquipment);
+  if(findcolortolerance(x,y,7144782,555,210,726, 459,3)) then
+    begin
+      Mouse.Move(x,y);
+      Mouse.Click(0);
+      ChooseOption.Select('Edgeville',MOUSE_LEFT,TRUE,TRUE);
+      wait(1000);
+    end
+    GameTabs.open(tabInventory);
+end;
+function GetAmount(B: TBox): LongInt;
+var
+  TextColors: TIntegerArray;
+  Text: string;
+  I: Integer;
+begin
+  Result := 0;
+  TextColors := [clYellow, clWhite, 8453888];
+      Text := GetTextAtEx(B,0,5,1,clYellow,5,StatChars07);
+      Result := StrToIntDef(Text, -1);
+      if (Result > -1) then
+        Result := (Result * Floor(Pow(1000, I)));
+    end;
+function bmAmount : integer;
+var
+   PBox : Tbox;
+begin
+  PBox := IntToBox(600, 205, 640, 250);
+result := GetAmount(PBox);
+end
+procedure banditLogic;
+begin
+    if(not lowhealth) then thieveHero;
+    if(lowhealth) then drinkbrew;
+    if(noBrews or veryLowHealth) then gloryTeleport;
+    if(bmAmount >= 22000) then gloryTeleport;
+    wait(20);
+end
+
+procedure edgeLogic;
+begin
+  withdrawPreset;
+  wait(100,200);
+  banditTeleport;
+  wait(200,500);
+end
+begin
+  SRL.Setup([]);
+  AddOnTerminate('freeMemory');
+  Smart.EnableDrawing := false;
+  while(true) do
+  begin
+  if(notinwild) then edgeLogic;
+  if(not notinwild) then banditLogic;
+  end
+end.

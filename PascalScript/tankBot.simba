@@ -1,0 +1,246 @@
+program tankBot;
+
+procedure TSRL.Setup(Options: ESRLOptionSet = SRL_DEFAULT_OPTIONS);
+override;
+begin
+  Self.WriteLn('Setting up SRL for OSR');
+  Self.Writeln('Waiting for client to load...');
+  Smart.Init();
+end;
+procedure openGameTab;
+begin
+  Mouse.Move(636,176);
+  Mouse.Click(1);
+  wait(50);
+end
+procedure openPrayTab;
+begin
+  Mouse.Move(705,182);
+  Mouse.Click(1);
+end
+procedure castRetribution;
+var
+  x,y : integer;
+begin
+ openPrayTab;
+ if(countcolortolerance(7451338,594,365,598,373,2) < 25) then begin
+  Mouse.Move(679, 659);
+  Mouse.Click(1);
+  wait(500);
+ end
+end
+procedure withdrawPreset;
+var
+  x,y : integer;
+begin
+  GameTabs.open(tabQuests);
+  Mouse.Move(726,425);
+  Mouse.Click(1);
+    wait(1000);
+  if(findcolortolerance(x,y,7830644,563,256,580,270,3)) then
+  begin
+    Mouse.Move(x,y);
+    Mouse.Click(1);
+    wait(1000);
+    if(findcolortolerance(x,y,668230,237, 208,250, 212,5)) then
+    begin
+      Mouse.Move(x,y);
+      Mouse.Click(1);
+      wait(1000);
+      Keyboard.PressKey(VK_1);
+    end
+  end
+  opengametab;
+end
+
+procedure teleportAnnakarl;
+  var
+  x,y : integer;
+begin
+  GameTabs.open(tabInventory);
+  wait(200);
+  if(findcolortolerance(x,y,8850793,555,210,726, 459,8)) then
+    begin
+      Mouse.Move(x,y);
+      Mouse.Click(0);
+      ChooseOption.Select('Break',1,true,true);
+      wait(1000);
+      Keyboard.PressKey(VK_1);
+      wait(1500,2400);
+    end
+end
+
+function atEdge : boolean
+begin
+  result := countcolortolerance(1732464,570,15,709,163,12) > 1000;
+end
+
+function atGdz : boolean
+begin
+  result := countcolortolerance(2105378,570,15,709,163,12) > 3000;
+end
+
+function lowHealth : boolean
+begin
+  result := Minimap.GetHPLevel <= 100;
+end
+
+function lowPrayer : boolean
+begin
+  result := Minimap.GetPrayerLevel <= 45;
+end
+
+procedure drinkBrew;
+  var
+  x,y : integer;
+  timer : TTimeMarker;
+begin
+   GameTabs.open(tabInventory);
+   if(findcolortolerance(x,y,4636866,555,210,726, 459,3)) then
+    begin
+      Mouse.Move(x,y);
+      if(mainscreen.isuptext(['rink'])) then
+         begin
+         Mouse.Click(1);
+         wait(10);
+         end
+      timer.Start;
+      while(timer.GetTotalTime < 1800) do
+      begin
+        if(findcolortolerance(x,y,11053492,555,210,726, 459,3)) then
+        begin
+         Mouse.Move(x,y);
+         Mouse.Click(1);
+         wait(10);
+      end
+      end
+      timer.Reset;
+    end else
+      if(findcolortolerance(x,y,11053492,555,210,726, 459,3)) then
+        begin
+         Mouse.Move(x,y);
+         Mouse.Click(1);
+         wait(200);
+      end
+end
+procedure drinkRestore;
+  var
+  x,y : integer;
+  timer : TTimeMarker;
+begin
+   GameTabs.open(tabInventory);
+   if(findcolortolerance(x,y,7632826,555,210,726, 459,8)) then
+    begin
+      Mouse.Move(x,y);
+      Mouse.Click(1);
+      wait(10);
+      timer.Start;
+      while(timer.GetTotalTime <  1800) do
+      begin
+        if(findcolortolerance(x,y,11053492,555,210,726, 459,3)) then
+        begin
+         Mouse.Move(x,y);
+         Mouse.Click(1);
+         wait(10);
+      end
+      end
+      timer.Reset;
+    end
+end
+procedure castVeng;
+var
+  x,y : integer;
+begin
+  GameTabs.open(tabMagic);
+  if(findcolortolerance(x,y,13053,570, 428,575,435,5)) then
+    begin
+      Mouse.Move(x,y);
+      Mouse.Click(1);
+    end
+   opengametab;
+end
+
+procedure setupQuickPrayers;
+begin
+  Mouse.Move(554,95);
+  Mouse.Click(1);
+end
+
+procedure homeSetup;
+begin
+  withdrawPreset;
+  setupQuickPrayers;
+  castVeng;
+  wait(500);
+  openGameTab;
+  teleportAnnakarl;
+  wait(1000,2000);
+end
+procedure FindTarget();
+var
+  TPA1, TPA2: TPointArray;
+  ATPA: T2DPointArray;
+  I: Integer;
+  Pnt: TPoint;
+  RagList: TStringArray;
+  t: integer;
+begin
+  ragList := [];
+  SetColorToleranceSpeed(2);
+  SetToleranceSpeed2Modifiers(2, 2);
+  if (findColorsTolerance(TPA1, 3421241, 0, 0, 446, 293, 25)) then
+  begin
+    TPA2 := ReturnPointsNotInTPA(TPA1, IntToBox(0, 0, 515, 336));
+    ATPA := FloodFillTPA(TPA2);
+    FilterTPAsBetween(ATPA, 0, 50);
+    FilterTPAsBetween(ATPA, 1500, 50000);
+    if (Length(ATPA) > 0) then
+    begin
+      for I := 0 to high(ATPA) do
+      begin
+        if(Minimap.GetHPLevel <= 75) then exit;
+        Pnt := MiddleTPA(ATPA[I]);
+        Mouse.Move(Pnt.x, Pnt.y);
+        wait(5);
+        if mainscreen.isuptext(ragList) then
+        begin
+          Mouse.Click(1);
+          exit;
+        end;
+      end;
+    end;
+  end;
+end;
+procedure wildLogic;
+  var
+  timer,timer2 : TTimeMarker;
+begin
+  timer.Start;
+  while((timer.GetTotalTime <  30000) and (atgdz)) do begin
+    timer2.Start;
+    while((timer2.GetTotalTime < 5000) and (atgdz)) do
+    begin
+     if(lowHealth and not lowPrayer) then drinkbrew;
+      if(lowPrayer) then drinkRestore;
+      if(Minimap.GetHPLevel >= 90) then findtarget;
+      if((Minimap.GetHPLevel <= 16) and (Minimap.GetHPLevel > 0)) then castRetribution;
+    end
+    if((Stats.GetCurrentLevel(skill_magic) <= 60) and not lowHealth) then
+        drinkRestore;
+    timer2.Reset;
+  end;
+  if(Stats.GetCurrentLevel(skill_magic) > 94) then castVeng;
+  opengametab;
+  timer.Reset;
+  timer2.Reset;
+end
+begin
+  SRL.Setup([]);
+  AddOnTerminate('freeMemory');
+  Smart.EnableDrawing := false;
+  while(true) do
+  begin
+    if(atEdge) then homeSetup;
+    if(atGdz) then wildLogic;
+  end
+end.
