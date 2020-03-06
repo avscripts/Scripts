@@ -1,4 +1,3 @@
-```pascal
 program tankBot;
 
 procedure TSRL.Setup(Options: ESRLOptionSet = SRL_DEFAULT_OPTIONS);
@@ -245,4 +244,4 @@ begin
     if(atGdz) then wildLogic;
   end
 end.
-```
+
